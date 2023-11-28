@@ -16,9 +16,10 @@ public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         Inventory startingInventory = new Inventory(120, 540, 400, 9, 550);
-        final Drink cappuccino = new Drink(CAPPU_BEANS, CAPPU_WATER, CAPPU_MILK, CAPPU_COST);
-        final Drink latte = new Drink(LATTE_BEANS, LATTE_WATER, LATTE_MILK, LATTE_COST);
-        final Drink espresso = new Drink(ESPR_BEANS, ESPR_WATER, 0, ESPR_COST);
+        final Drink cappuccino = new Drink(CAPPU_BEANS, CAPPU_WATER, CAPPU_MILK, CAPPU_COST, 1);
+        final Drink latte = new Drink(LATTE_BEANS, LATTE_WATER, LATTE_MILK, LATTE_COST, 1);
+        final Drink espresso = new Drink(ESPR_BEANS, ESPR_WATER, 0, ESPR_COST, 1);
+        final Drink thee = new Drink(0, 500, 5, 0, 1);
         CoffeeMachine coffeeMachine = new CoffeeMachine(startingInventory);
         while (coffeeMachine.isPoweredOn()) {
             System.out.println("Write action (buy, fill, take, remaining, exit):");
@@ -52,17 +53,17 @@ public class Main {
                 }
                 case FILL -> {
                     System.out.println("Write how many ml of water you want to add:");
-                    coffeeMachine.inventory.water = coffeeMachine.inventory.water.fill(scanner.nextInt());
+                    coffeeMachine.inventory.water.fill(scanner.nextInt());
                     System.out.println("Write how many ml of milk you want to add:");
-                    coffeeMachine.inventory.milk = coffeeMachine.inventory.milk.fill(scanner.nextInt());
+                    coffeeMachine.inventory.milk.fill(scanner.nextInt());
                     System.out.println("Write how many grams of coffee beans you want to add:");
-                    coffeeMachine.inventory.beans = coffeeMachine.inventory.beans.fill(scanner.nextInt());
+                    coffeeMachine.inventory.beans.fill(scanner.nextInt());
                     System.out.println("Write how many disposable cups you want to add:");
-                    coffeeMachine.inventory.cups = coffeeMachine.inventory.cups.fill(scanner.nextInt());
+                    coffeeMachine.inventory.cups.fill(scanner.nextInt());
                 }
                 case TAKE -> {
                     System.out.println("I gave you $" + coffeeMachine.inventory.money.getValue());
-                    coffeeMachine.inventory.money = coffeeMachine.inventory.money.take();
+                    coffeeMachine.inventory.money.take();
                 }
                 case EXIT -> coffeeMachine.powerOff();
                 default -> {
@@ -114,77 +115,4 @@ class CoffeeConstants {
             ESPR_WATER = 250, LATTE_WATER = 350, CAPPU_WATER = 200,
             ESPR_COST = 4, LATTE_COST = 7, CAPPU_COST = 6,
             LATTE_MILK = 75, CAPPU_MILK = 100;
-}
-class CoffeeMachine {
-    Inventory inventory;
-    private boolean poweredOn;
-    public CoffeeMachine(Inventory inventory) {
-        this.inventory = inventory;
-        this.poweredOn = true;
-    }
-    public boolean isPoweredOn() {
-        return this.poweredOn;
-    }
-    public void powerOff() {
-        this.poweredOn = false;
-    }
-    public String remainingMessage() {
-        return "The coffee machine has:\n" +
-                this.inventory.water.getValue() + " ml of water\n" +
-                this.inventory.milk.getValue() + " ml of milk\n" +
-                this.inventory.beans.getValue() + " g of coffee beans\n" +
-                this.inventory.cups.getValue() + " disposable cups\n" +
-                "$" + this.inventory.money.getValue() + " of money";
-    }
-}
-class Resource {
-    public int value;
-    public int getValue() {
-        return value;
-    }
-    Resource(int value) {
-        this.value = value;
-    }
-    public Resource fill(int value) {
-        return new Resource(this.value + value);
-    }
-    public Resource take() {
-        return new Resource(0);
-    }
-}
-record Drink(int beans, int water, int milk, int price) {
-}
-class Inventory {
-    Resource beans;
-    Resource milk;
-    Resource water;
-    Resource cups;
-    Resource money;
-    Inventory(int beans, int milk, int water, int cups, int money) {
-        this.beans = new Resource(beans);
-        this.milk = new Resource(milk);
-        this.water = new Resource(water);
-        this.cups = new Resource(cups);
-        this.money = new Resource(money);
-    }
-    public Inventory update(Drink drink) throws Exception {
-        if (this.beans.getValue() < drink.beans()) {
-            throw new Exception("Sorry, not enough beans!");
-        }
-        if (this.milk.getValue() < drink.milk()) {
-            throw new Exception("Sorry, not enough milk!");
-        }
-        if (this.water.getValue() < drink.water()) {
-            throw new Exception("Sorry, not enough water!");
-        }
-        if (this.cups.getValue() < 1) {
-            throw new Exception("Sorry, not enough cups!");
-        }
-        return new Inventory(
-                this.beans.getValue() - drink.beans(),
-                this.milk.getValue() - drink.milk(),
-                this.water.getValue() - drink.water(),
-                this.cups.getValue() - 1,
-                this.money.getValue() + drink.price());
-    }
 }
